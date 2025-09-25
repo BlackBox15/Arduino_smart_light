@@ -5,7 +5,7 @@
 #define ULTRASONIC_CHECK_PERIOD 3000
 
 NewPing UltraSonicSensor(ULTRASONIC_TRIGGER_PIN, ULTRASONIC_ECHO_PIN);
-int previousMillis;
+unsigned long previousMillis;
 
 void setup() { Serial.begin(9600); }
 
