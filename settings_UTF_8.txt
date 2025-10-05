@@ -1,0 +1,9 @@
+# current time hh:mm dd-MM-yyyy
+13:54 28-07-2025
+# lights ON by sensor, hh:mm
+19:38
+# stand by hh:mm
+23:27
+# lights OFF hh:mm
+06:13
+# $some
