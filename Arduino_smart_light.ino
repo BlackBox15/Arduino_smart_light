@@ -27,7 +27,6 @@ void loop() {
 	
 	// periodic ultrasonig measurement
     if (currentMillis - previousMillis >= ULTRASONIC_CHECK_PERIOD) {
-        // Serial.println(UltraSonicSensor.ping_cm());
         previousMillis = currentMillis;
     }
 }
