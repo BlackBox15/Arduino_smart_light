@@ -1,11 +1,11 @@
 #include <NewPing.h>
 #include <SD.h>
 
-#define ULTRASONIC_TRIGGER_PIN 2
-#define ULTRASONIC_ECHO_PIN 3
-#define ULTRASONIC_CHECK_PERIOD 3000
+#define ULTRASONIC_TRIGGER_PIN      2
+#define ULTRASONIC_ECHO_PIN         3
+#define ULTRASONIC_CHECK_PERIOD     3000
 
-#define SD_CHIP_SELECT_PIN 10
+#define SD_CHIP_SELECT_PIN          10
 
 NewPing UltraSonicSensor(ULTRASONIC_TRIGGER_PIN, ULTRASONIC_ECHO_PIN);
 unsigned long previousMillis;
@@ -47,7 +47,7 @@ void setup() {
             parseSettingsFile(rawText, timeSettings);
         }
     }
-    
+
     Serial.begin(9600);
     while (!Serial);
 }
