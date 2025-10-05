@@ -6,6 +6,7 @@
 
 NewPing UltraSonicSensor(ULTRASONIC_TRIGGER_PIN, ULTRASONIC_ECHO_PIN);
 unsigned long previousMillis;
+unsigned long ultrasonicDistance;
 
 // =================================================================//
 // 																	//
@@ -26,6 +27,7 @@ void loop() {
 	
 	// periodic ultrasonig measurement
     if (currentMillis - previousMillis >= ULTRASONIC_CHECK_PERIOD) {
+		ultrasonicDistance = UltraSonicSensor.ping_cm()
         previousMillis = currentMillis;
     }
 }
