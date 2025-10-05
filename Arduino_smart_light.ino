@@ -27,7 +27,7 @@ void loop() {
 	
 	// periodic ultrasonig measurement
     if (currentMillis - previousMillis >= ULTRASONIC_CHECK_PERIOD) {
-		ultrasonicDistance = UltraSonicSensor.ping_cm()
+		ultrasonicDistance = UltraSonicSensor.ping_cm();
         previousMillis = currentMillis;
     }
 }
