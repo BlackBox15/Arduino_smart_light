@@ -7,7 +7,10 @@
 NewPing UltraSonicSensor(ULTRASONIC_TRIGGER_PIN, ULTRASONIC_ECHO_PIN);
 unsigned long previousMillis;
 
-void setup() { Serial.begin(9600); }
+void setup() { 
+    Serial.begin(9600);
+    while (!Serial);
+}
 
 void loop() {
     unsigned long currentMillis = millis();
