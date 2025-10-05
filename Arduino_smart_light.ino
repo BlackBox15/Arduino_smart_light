@@ -7,16 +7,27 @@
 NewPing UltraSonicSensor(ULTRASONIC_TRIGGER_PIN, ULTRASONIC_ECHO_PIN);
 unsigned long previousMillis;
 
+// ==================================================================
+// 
+//                                  setup
+// 
+// ==================================================================
 void setup() { 
     Serial.begin(9600);
     while (!Serial);
 }
 
+// ==================================================================
+// 
+//                              loop
+// 
+// ==================================================================
 void loop() {
     unsigned long currentMillis = millis();
-
+	
+	// periodic ultrasonig measurement
     if (currentMillis - previousMillis >= ULTRASONIC_CHECK_PERIOD) {
-        Serial.println(UltraSonicSensor.ping_cm());
+        // Serial.println(UltraSonicSensor.ping_cm());
         previousMillis = currentMillis;
     }
 }
