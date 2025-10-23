@@ -5,8 +5,8 @@
 
 #define ULTRASONIC_TRIGGER_PIN      2
 #define ULTRASONIC_ECHO_PIN         3
-#define ULTRASONIC_CHECK_PERIOD     3000
-#define LED_STRIPE_DISTANCE         30
+#define ULTRASONIC_CHECK_PERIOD     4000
+#define LED_STRIPE_DISTANCE         10
 
 #define LED_STRIPE_DO               8
 #define SD_CHIP_SELECT_PIN          10
@@ -63,8 +63,14 @@ void setup() {
             parseSettingsFile(rawText, timeSettings);
 
             Ds1302::DateTime dt;
-            dt.year = timesettings[4];
-            dt.month = timesettings[];
+            dt.year = timeSettings[4];
+            dt.month = timeSettings[3];
+            dt.day = timeSettings[2];
+            dt.hour = timeSettings[0];
+            dt.minute = timeSettings[1];
+            dt.second = 0;
+
+            rtc.setDateTime(&dt);
         }
     }
 }
@@ -78,42 +84,44 @@ void loop() {
     Ds1302::DateTime now;
 	
     if (currentMillis - previousMillis >= ULTRASONIC_CHECK_PERIOD) {
-        // if (ledStateLogic) {
-        //     ledStateLogic = false;
-        // } else {
-        //     ledStateLogic = true;
-        // }        
-		
+        ultrasonicDistance = UltraSonicSensor.ping_cm();
         rtc.getDateTime(&now);
 
-        Serial.println("time from rtc:");
-        Serial.println(now.hour);
+        Serial.println(F("time from rtc:"));
+        Serial.print(now.hour);
+        Serial.print(F(":"));
         Serial.println(now.minute);
+        Serial.print(now.day);
+        Serial.print(F("-"));
+        Serial.print(now.month);
+        Serial.print(F("-"));
+        Serial.println(now.year);
 
-        if (now.hour >= timeSettings[0]) {
+        if (now.hour >= timeSettings[9] || now.hour < timeSettings[5]) {
+            digitalWrite(LED_STRIPE_DO, LOW);
+        } else if (now.hour >= timeSettings[5] && now.hour < timeSettings[7]) {
+            if (ultrasonicDistance <= LED_STRIPE_DISTANCE) {
+                if (digitalRead(LED_STRIPE_DO)) {
+                    digitalWrite(LED_STRIPE_DO, LOW);
+                } else {
+                    digitalWrite(LED_STRIPE_DO, HIGH);
+                }
+            }
+        } else if (now.hour >= timeSettings[7] || now.hour < timeSettings[9]) {
             digitalWrite(LED_STRIPE_DO, HIGH);
         }
 
-        ultrasonicDistance = UltraSonicSensor.ping_cm();
-
-        if (ultrasonicDistance <= LED_STRIPE_DISTANCE) {
-            if (digitalRead(LED_STRIPE_DO)) {
-                digitalWrite(LED_STRIPE_DO, LOW);
-            } else {
-                digitalWrite(LED_STRIPE_DO, HIGH);
-            }
-        }
-
+        
         Serial.print("distance: ");
         Serial.print(ultrasonicDistance);
         Serial.println(" cm");
 
-        for (int i = 0; i < 11; i++) {
-            Serial.print("timesettings[");
-            Serial.print(i);
-            Serial.print("] = ");
-            Serial.println(timeSettings[i]);
-        }
+        // for (int i = 0; i < 11; i++) {
+        //     Serial.print("timesettings[");
+        //     Serial.print(i);
+        //     Serial.print("] = ");
+        //     Serial.println(timeSettings[i]);
+        // }
 
         previousMillis = currentMillis;
     }
