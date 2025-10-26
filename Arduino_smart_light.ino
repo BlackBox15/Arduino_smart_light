@@ -2,27 +2,34 @@
 #include <SD.h>
 #include <Arduino.h>
 #include <Ds1302.h>
+#include <EEPROM.h>
 
-#define ULTRASONIC_TRIGGER_PIN      2
-#define ULTRASONIC_ECHO_PIN         3
-#define ULTRASONIC_CHECK_PERIOD_MS  4000
+#define ULTRASONIC_1_TRIGGER_PIN      2
+#define ULTRASONIC_1_ECHO_PIN         3
+#define ULTRASONIC_2_TRIGGER_PIN      4
+#define ULTRASONIC_2_ECHO_PIN         9
+#define ULTRASONIC_CHECK_PERIOD_MS  2000
 #define ULTRASONIC_SWITCH_DISTANCE  10
+NewPing UltraSonicSensor1(ULTRASONIC_1_TRIGGER_PIN, ULTRASONIC_1_ECHO_PIN);
+NewPing UltraSonicSensor2(ULTRASONIC_2_TRIGGER_PIN, ULTRASONIC_2_ECHO_PIN);
+
+#define BUTTON_PIN                  A0
+
 #define TIME_CHECK_PERIOD_MS        1000
 #define LED_STRIPE_DO               8
 #define SD_CHIP_SELECT_PIN          10
 
-NewPing UltraSonicSensor(ULTRASONIC_TRIGGER_PIN, ULTRASONIC_ECHO_PIN);
 unsigned long prevDistanceCheck;
 unsigned long prevTimeCheck;
-unsigned long distance;
-bool ledStateLogic;
+unsigned long distanceFromSensor1;
+unsigned long distanceFromSensor2;
+int timeSettings[11];
 
 // Определение пинов для подключения DS1302
-const int PIN_RST = 7;  // Пин для управления
-const int PIN_DAT = 6;  // Пин для передачи данных
-const int PIN_CLK = 5;  // Пин для синхронизации тактов
+#define PIN_RST         7  // Пин для управления
+#define PIN_DAT         6  // Пин для управления
+#define PIN_CLK         5  // Пин для управления
 Ds1302 rtc(PIN_RST, PIN_CLK, PIN_DAT);
-int timeSettings[11];
 
 // =================================================================//
 // 																	//
@@ -30,45 +37,24 @@ int timeSettings[11];
 // 																	//
 // =================================================================//
 void setup() {
+    pinMode(BUTTON_PIN, INPUT);
     pinMode(LED_STRIPE_DO, OUTPUT);
-    File openedFile;
-    String rawText;
-    char temporaryChar;
-    bool enableGetNextChar = false;
-    String defaultInitTime = "Mon Aug 11 00:00:00 2025";
+
+    Ds1302::DateTime initTime;
+
+    EEPROM.get(0, timeSettings);
+    rtc.init();
+    rtc.getDateTime(&initTime);
+    timeSettings[0] = initTime.hour;
+    timeSettings[1] = initTime.minute;
+    timeSettings[2] = initTime.day;
+    timeSettings[3] = initTime.month;
+    timeSettings[4] = initTime.year;
 
     Serial.begin(9600);
     while (!Serial);
 
-    rtc.init();
-
-    if (SD.begin(SD_CHIP_SELECT_PIN)) {
-        openedFile = SD.open(F("settings.txt"), FILE_READ);
-
-        if (openedFile) {
-            while (openedFile.available()) {
-                temporaryChar = (char)openedFile.read();
-                            
-                if (temporaryChar == '#') {
-                    enableGetNextChar = false;
-                } else if (enableGetNextChar == false && temporaryChar == '\n') {
-                    enableGetNextChar = true;
-                    continue;
-                }
-
-                if (enableGetNextChar) {
-                    rawText += temporaryChar;
-                }                
-            }        
-            openedFile.close();
-            
-            parseSettingsFile(rawText, timeSettings);
-
-            Ds1302::DateTime dt = fillDateTime(timeSettings);
-
-            rtc.setDateTime(&dt);
-        }
-    }
+    // printTimeSettings();
 }
 // =================================================================//
 // 																	//
@@ -79,20 +65,27 @@ void loop() {
     unsigned long currentMillis = millis();
     Ds1302::DateTime now;
 
+    if (digitalRead(BUTTON_PIN)) {
+        // считывание обновлённых данных с SD-карты
+        Serial.println("button pressed..");
+        readSdCard();
+    }
+
     if (currentMillis - prevTimeCheck >= TIME_CHECK_PERIOD_MS) {
         rtc.getDateTime(&now);
         prevTimeCheck = currentMillis;
     }
 	
     if (currentMillis - prevDistanceCheck >= ULTRASONIC_CHECK_PERIOD_MS) {
-        distance = UltraSonicSensor.ping_cm();
+        distanceFromSensor1 = UltraSonicSensor1.ping_cm();
+        distanceFromSensor2 = UltraSonicSensor2.ping_cm();
 
-        printTimeFromRtc(now);        
+        // printTimeFromRtc(now);        
 
         if (now.hour >= timeSettings[9] || now.hour < timeSettings[5]) {
             digitalWrite(LED_STRIPE_DO, LOW);
         } else if (now.hour >= timeSettings[5] && now.hour < timeSettings[7]) {
-            if (distance <= ULTRASONIC_SWITCH_DISTANCE) {
+            if (distanceFromSensor1 <= ULTRASONIC_SWITCH_DISTANCE || distanceFromSensor2 <= ULTRASONIC_SWITCH_DISTANCE) {
                 if (digitalRead(LED_STRIPE_DO)) {
                     digitalWrite(LED_STRIPE_DO, LOW);
                 } else {
@@ -103,7 +96,7 @@ void loop() {
             digitalWrite(LED_STRIPE_DO, HIGH);
         }
 
-        printDistance();
+        // printDistance();
 
         prevDistanceCheck = currentMillis;
     }
