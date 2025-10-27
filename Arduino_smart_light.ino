@@ -25,7 +25,6 @@ unsigned long distanceFromSensor1;
 unsigned long distanceFromSensor2;
 int timeSettings[11];
 
-// Определение пинов для подключения DS1302
 #define PIN_RST         7  // Пин для управления
 #define PIN_DAT         6  // Пин для управления
 #define PIN_CLK         5  // Пин для управления
