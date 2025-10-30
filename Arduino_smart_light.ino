@@ -9,7 +9,7 @@
 #define ULTRASONIC_1_ECHO_PIN         3
 #define ULTRASONIC_2_TRIGGER_PIN      4
 #define ULTRASONIC_2_ECHO_PIN         9
-#define ULTRASONIC_CHECK_PERIOD_MS  2000
+#define ULTRASONIC_CHECK_PERIOD_MS  1000
 #define ULTRASONIC_SWITCH_DISTANCE  10
 NewPing UltraSonicSensor1(ULTRASONIC_1_TRIGGER_PIN, ULTRASONIC_1_ECHO_PIN);
 NewPing UltraSonicSensor2(ULTRASONIC_2_TRIGGER_PIN, ULTRASONIC_2_ECHO_PIN);
@@ -42,7 +42,7 @@ bool lightSwitch;
 // 																	//
 // =================================================================//
 void setup() {
-    pinMode(BUTTON_PIN, INPUT);
+    pinMode(BUTTON_PIN, INPUT_PULLUP);
     pinMode(LED_STRIPE_DO, OUTPUT);
 
     Ds1302::DateTime initTime;
@@ -74,7 +74,7 @@ void loop() {
     unsigned long currentMillis = millis();
     Ds1302::DateTime now;
 
-    if (digitalRead(BUTTON_PIN)) {
+    if (!digitalRead(BUTTON_PIN)) {
         // считывание обновлённых данных с SD-карты
         Serial.println("button pressed..");
         readSdCard();
@@ -99,7 +99,7 @@ void loop() {
         distanceFromSensor1 = UltraSonicSensor1.ping_cm();
         distanceFromSensor2 = UltraSonicSensor2.ping_cm();
 
-        // printTimeFromRtc(now);        
+        printTimeFromRtc(now);        
 
         if (now.hour >= timeSettings[9] || now.hour < timeSettings[5]) {
             digitalWrite(LED_STRIPE_DO, LOW);
@@ -119,7 +119,7 @@ void loop() {
             lightSwitch = true;
         }
 
-        // printDistance();
+        printDistance();
 
         prevDistanceCheck = currentMillis;
     }
