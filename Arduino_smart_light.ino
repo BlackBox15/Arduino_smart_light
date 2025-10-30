@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <Ds1302.h>
 #include <EEPROM.h>
+#include <FastLED.h>
 
 #define ULTRASONIC_1_TRIGGER_PIN      2
 #define ULTRASONIC_1_ECHO_PIN         3
@@ -30,6 +31,11 @@ int timeSettings[11];
 #define PIN_CLK         5  // Пин для управления
 Ds1302 rtc(PIN_RST, PIN_CLK, PIN_DAT);
 
+#define LED_PIN         A1  // Пин управления лентой
+#define LED_NUM         15  // количество LED'ов, управляемых одним чипом
+CRGB leds[LED_NUM];
+bool lightSwitch;
+
 // =================================================================//
 // 																	//
 //								setup								//
@@ -53,6 +59,10 @@ void setup() {
     Serial.begin(9600);
     while (!Serial);
 
+    FastLED.addLeds<WS2811, LED_PIN, GRB>(leds, LED_NUM);
+    FastLED.setBrightness(10);
+    FastLED.show();
+
     // printTimeSettings();
 }
 // =================================================================//
@@ -74,6 +84,16 @@ void loop() {
         rtc.getDateTime(&now);
         prevTimeCheck = currentMillis;
     }
+    
+    if (lightSwitch) {
+        for (int i = 0; i < LED_NUM; i++) {
+            leds[i].setRGB(3, 3, 3);   // RGB, 0-255
+        }
+    } else {
+        for (int i = 0; i < LED_NUM; i++) {
+            leds[i].setRGB(0, 0, 0);   // RGB, 0-255
+        }
+    }
 	
     if (currentMillis - prevDistanceCheck >= ULTRASONIC_CHECK_PERIOD_MS) {
         distanceFromSensor1 = UltraSonicSensor1.ping_cm();
@@ -83,16 +103,20 @@ void loop() {
 
         if (now.hour >= timeSettings[9] || now.hour < timeSettings[5]) {
             digitalWrite(LED_STRIPE_DO, LOW);
+            lightSwitch = false;
         } else if (now.hour >= timeSettings[5] && now.hour < timeSettings[7]) {
             if (distanceFromSensor1 <= ULTRASONIC_SWITCH_DISTANCE || distanceFromSensor2 <= ULTRASONIC_SWITCH_DISTANCE) {
                 if (digitalRead(LED_STRIPE_DO)) {
                     digitalWrite(LED_STRIPE_DO, LOW);
+                    lightSwitch = false;
                 } else {
                     digitalWrite(LED_STRIPE_DO, HIGH);
+                    lightSwitch = true;
                 }
             }
         } else if (now.hour >= timeSettings[7] || now.hour < timeSettings[9]) {
             digitalWrite(LED_STRIPE_DO, HIGH);
+            lightSwitch = true;
         }
 
         // printDistance();
