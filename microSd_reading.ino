@@ -5,7 +5,6 @@ void readSdCard() {
     bool enableGetNextChar = false;
     // String defaultInitTime = "Mon Aug 11 00:00:00 2025";
 
-
     if (SD.begin(SD_CHIP_SELECT_PIN)) {
         openedFile = SD.open(F("settings.txt"), FILE_READ);
 
@@ -32,6 +31,8 @@ void readSdCard() {
             EEPROM.put(0, timeSettings);
 
             rtc.setDateTime(&dt);
+        } else {
+            Serial.println("Can't open settings file.");
         }
     }
 }

@@ -60,8 +60,8 @@ void setup() {
     while (!Serial);
 
     FastLED.addLeds<WS2811, LED_PIN, GRB>(leds, LED_NUM);
-    FastLED.setBrightness(10);
-    FastLED.show();
+    // FastLED.setBrightness(10);
+    // FastLED.show();
 
     // printTimeSettings();
 }
@@ -85,15 +85,7 @@ void loop() {
         prevTimeCheck = currentMillis;
     }
     
-    if (lightSwitch) {
-        for (int i = 0; i < LED_NUM; i++) {
-            leds[i].setRGB(3, 3, 3);   // RGB, 0-255
-        }
-    } else {
-        for (int i = 0; i < LED_NUM; i++) {
-            leds[i].setRGB(0, 0, 0);   // RGB, 0-255
-        }
-    }
+    
 	
     if (currentMillis - prevDistanceCheck >= ULTRASONIC_CHECK_PERIOD_MS) {
         distanceFromSensor1 = UltraSonicSensor1.ping_cm();
@@ -119,7 +111,19 @@ void loop() {
             lightSwitch = true;
         }
 
-        printDistance();
+        if (lightSwitch) {
+            for (int i = 0; i < LED_NUM; i++) {
+                leds[i].setRGB(30, 30, 30);   // RGB, 0-255
+            }
+            FastLED.show();
+        } else {
+            for (int i = 0; i < LED_NUM; i++) {
+                leds[i].setRGB(0, 0, 0);   // RGB, 0-255
+            }
+            FastLED.clear();
+        }
+
+        // printDistance();
 
         prevDistanceCheck = currentMillis;
     }
