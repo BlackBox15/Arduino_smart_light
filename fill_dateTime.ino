@@ -1,4 +1,4 @@
-Ds1302::DateTime fillDateTime(int timeSettings[]) {
+Ds1302::DateTime fillDateTime(unsigned char timeSettings[]) {
     Ds1302::DateTime dt;
     dt.year = timeSettings[4];
     dt.month = timeSettings[3];

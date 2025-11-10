@@ -3,7 +3,6 @@ void readSdCard() {
     String rawText;
     char temporaryChar;
     bool enableGetNextChar = false;
-    // String defaultInitTime = "Mon Aug 11 00:00:00 2025";
 
     if (SD.begin(SD_CHIP_SELECT_PIN)) {
         openedFile = SD.open(F("settings.txt"), FILE_READ);
@@ -24,15 +23,18 @@ void readSdCard() {
                 }                
             }        
             openedFile.close();
-            
-            parseSettingsFile(rawText, timeSettings);
 
-            Ds1302::DateTime dt = fillDateTime(timeSettings);
-            EEPROM.put(0, timeSettings);
+            // Serial.println(F("rawtext:"));
+            // Serial.println(rawText);
+            
+            parseSettingsFile(rawText, timeParams);
+
+            Ds1302::DateTime dt = fillDateTime(timeParams);
+            // EEPROM.put(0, timeParams);
 
             rtc.setDateTime(&dt);
         } else {
-            Serial.println("Can't open settings file.");
+            Serial.println(F("Can't open settings file."));
         }
     }
 }
