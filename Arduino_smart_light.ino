@@ -4,6 +4,7 @@
 #include <Ds1302.h>
 #include <EEPROM.h>
 #include <FastLED.h>
+#include "parseScCard.h"
 
 #define ULTRASONIC_1_TRIGGER_PIN        2
 #define ULTRASONIC_1_ECHO_PIN           3
@@ -47,6 +48,7 @@ void setup() {
 
     Serial.begin(9600);
     while (!Serial);
+    
 
     Ds1302::DateTime initTime;
 
@@ -99,6 +101,7 @@ void loop() {
     static unsigned char distanceFromSensor2;
     static String currentState = F("Init");
     static bool isLedSwitchedOff;
+    String rawTextFromSd = "";
 
     // Срабатывание кнопки + снятый флаг фильтрации дребезга
     if (!digitalRead(BUTTON_PIN) && !isFiltrationActive) {
@@ -106,6 +109,7 @@ void loop() {
         buttonPressTimestamp = millis();                    // фиксация момента срабатывания кнопки
         isFiltrationActive = !isFiltrationActive;           // активация фильтрации дребезга кнопки
         readSdCard();                                       // необходимая работа по кнопке (чтение SD-карты)
+        parseSdCard(SD);
     }
 
     // Снимаем флаг фильтрации дребезга по истечении времени уставки при условии, что флаг был поднят ранее
