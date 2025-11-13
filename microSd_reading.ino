@@ -30,11 +30,13 @@ void readSdCard() {
             parseSettingsFile(rawText, timeParams);
 
             Ds1302::DateTime dt = fillDateTime(timeParams);
-            // EEPROM.put(0, timeParams);
+            EEPROM.put(0, timeParams);
 
             rtc.setDateTime(&dt);
         } else {
-            Serial.println(F("Can't open settings file."));
+            #ifdef DEBUG
+                Serial.println(F("Can't open settings file."));
+            #endif
         }
     }
 }
