@@ -39,8 +39,13 @@ CRGB leds[LED_NUM];
 bool lightSwitch;
 int initFlag;
 
-
+// =================================================================//
+// 																	//
+//                      functions declaration                       //
+// 																	//
+// =================================================================//
 int ReadInitFlag();
+
 // =================================================================//
 // 																	//
 //								setup								//
@@ -153,13 +158,11 @@ void loop() {
     }
 
     /*
-
         Описание уставок:
 
             0		timeSettings[9]		timeSettings[5]		timeSettings[7]		24
             |--------|-------------------|-------------------|------------------|
                 stby		off					sensor			stby
-
     */
 
     // Период времени работы освещения по УЗ датчикам / дежурка
@@ -200,7 +203,7 @@ void loop() {
         }
         
     // Период времени работы чисто дежурки
-    } else if (now.hour > timeParams[7] && now.hour < timeParams[9]) {
+    } else if ((now.hour > timeParams[7] && now.hour <= 23) || (now.hour >= 0 && now.hour < timeParams[9])) {
         #ifdef DEBUG
             currentState = F("Stby");
         #endif
