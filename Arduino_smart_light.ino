@@ -218,8 +218,3 @@ void loop() {
         FastLED.show();        
     }
 }
-
-
-int ReadInitFlag() {
-    int ptr* = &timeParams
-}
