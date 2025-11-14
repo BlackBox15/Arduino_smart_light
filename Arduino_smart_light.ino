@@ -45,7 +45,7 @@ int initFlag;
 // 																	//
 // =================================================================//
 int ReadInitFlag();
-
+bool checkDistance(unsigned int, unsigned int, unsigned int);
 // =================================================================//
 // 																	//
 //								setup								//
@@ -108,8 +108,8 @@ void loop() {
     static unsigned long prevDistanceCheck;
     static bool isFiltrationActive;
     static unsigned long buttonPressTimestamp;
-    static unsigned char distanceFromSensor1;
-    static unsigned char distanceFromSensor2;
+    static unsigned int distanceFromSensor1;
+    static unsigned int distanceFromSensor2;
     static String currentState = F("Init");
     static bool isLedSwitchedOff;
     String rawTextFromSd = F("");
@@ -173,7 +173,7 @@ void loop() {
             distanceFromSensor2 = UltraSonicSensor2.ping_cm();
             
             // Пересечение уставки по любому из 2х УЗ датчиков
-            if (distanceFromSensor1 <= ULTRASONIC_SWITCH_DISTANCE || distanceFromSensor2 <= ULTRASONIC_SWITCH_DISTANCE) {
+            if (checkDistance(distanceFromSensor1, distanceFromSensor2, ULTRASONIC_SWITCH_DISTANCE)) {
                 // ...если свет был выключен до этого - включаем всю ленту
                 if (!isLedSwitchedOff) {
                     #ifdef DEBUG
@@ -220,4 +220,8 @@ void loop() {
         fill_solid(leds, LED_NUM, CRGB::Gray0);
         FastLED.show();        
     }
+}
+
+bool checkDistance(unsigned int sensor1, unsigned int sensor2, unsigned int distanceSetpoint) {
+    return (sensor1 <= distanceSetpoint) || (sensor2 <= distanceSetpoint);
 }
