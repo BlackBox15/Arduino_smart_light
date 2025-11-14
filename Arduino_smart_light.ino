@@ -46,6 +46,7 @@ int initFlag;
 // =================================================================//
 int ReadInitFlag();
 bool checkDistance(unsigned int, unsigned int, unsigned int);
+bool fallTrigger(unsigned int, unsigned int);
 // =================================================================//
 // 																	//
 //								setup								//
@@ -108,10 +109,13 @@ void loop() {
     static unsigned long prevDistanceCheck;
     static bool isFiltrationActive;
     static unsigned long buttonPressTimestamp;
-    static unsigned int distanceFromSensor1;
-    static unsigned int distanceFromSensor2;
+    static unsigned int prevDistSensor1;
+    static unsigned int prevDistSensor2;
+    unsigned int currDistSensor1;
+    unsigned int currDistSensor2;
     static String currentState = F("Init");
     static bool isLedSwitchedOff;
+    static bool isDistanceShort;
     String rawTextFromSd = F("");
 
     // Срабатывание кнопки + снятый флаг фильтрации дребезга
@@ -169,37 +173,61 @@ void loop() {
     if (now.hour >= timeParams[5] && now.hour <= timeParams[7]) {
         // Замер дистанции УЗ датчиками с заданным периодом
         if (currentMillis - prevDistanceCheck >= ULTRASONIC_CHECK_PERIOD_MS) {
-            distanceFromSensor1 = UltraSonicSensor1.ping_cm();
-            distanceFromSensor2 = UltraSonicSensor2.ping_cm();
-            
-            // Пересечение уставки по любому из 2х УЗ датчиков
-            if (checkDistance(distanceFromSensor1, distanceFromSensor2, ULTRASONIC_SWITCH_DISTANCE)) {
-                // ...если свет был выключен до этого - включаем всю ленту
-                if (!isLedSwitchedOff) {
-                    #ifdef DEBUG
-                        currentState = F("Sensor On");
-                    #endif
-                    isLedSwitchedOff = !isLedSwitchedOff;
-                    digitalWrite(TEST_LED, HIGH);
-                    fill_solid(leds, LED_NUM, CRGB::Gray100);
-                    FastLED.show();
-                // ...если свет был включен до этого - оставляем только дежурку
-                } else {
-                    #ifdef DEBUG
-                        currentState = F("Sensor Off");
-                    #endif
-                    isLedSwitchedOff = !isLedSwitchedOff;
-                    digitalWrite(TEST_LED, LOW);
-                    fill_solid(leds, LED_NUM, CRGB::Gray0);                                     // заливаем всю ленту чёрным (отключаем)
-                    for (unsigned char i = 0; i < LED_CHIPS_ON_FLOOR; i++) {                    // заливаем 1-ю ступень белым
-                        leds[i] = CRGB::Gray100;
-                    }
-                    for (unsigned char i = LED_NUM; i > (LED_NUM - LED_CHIPS_ON_FLOOR); i--) {  // заливаем последнюю ступень белым
-                        leds[i] = CRGB::Gray100;
-                    }
-                    FastLED.show();
+            currDistSensor1 = UltraSonicSensor1.ping_cm();
+            currDistSensor2 = UltraSonicSensor2.ping_cm();
+
+            if (checkDistance(currDistSensor1, currDistSensor2, ULTRASONIC_SWITCH_DISTANCE) 
+                && (fallTrigger(prevDistSensor1, currDistSensor1) 
+                    || fallTrigger(prevDistSensor2, currDistSensor2))) {
+                if (isLedSwitchedOff) {
+                    isLedSwitchedOff = false;
                 }
+
             }
+            
+
+            prevDistSensor1 = currDistSensor1;
+            prevDistSensor2 = currDistSensor2;
+
+
+
+
+            // isDistanceShort = checkDistance(distanceFromSensor1, distanceFromSensor2, ULTRASONIC_SWITCH_DISTANCE);
+            
+            // // Пересечение уставки по любому из 2-х УЗ датчиков и свет до этого момента был выключен
+            // if (isDistanceShort && isLedSwitchedOff)) {
+            //     isLedSwitchedOff = false;                       // состояние переменной соответствует ВКЛЮЧЕННОМУ свету
+            //     #ifdef DEBUG
+            //         currentState = F("Sensor On");
+            //     #endif
+            //         digitalWrite(TEST_LED, HIGH);
+            //         fill_solid(leds, LED_NUM, CRGB::Gray100);   // включаем свет
+            //         FastLED.show();
+
+
+            //     // if (!isLedSwitchedOff) {
+                    
+            //     //     isLedSwitchedOff = !isLedSwitchedOff;
+            //     //     digitalWrite(TEST_LED, HIGH);
+            //     //     fill_solid(leds, LED_NUM, CRGB::Gray100);
+            //     //     FastLED.show();
+            //     // } 
+            //     // else {
+            //     //     #ifdef DEBUG
+            //     //         currentState = F("Sensor Off");
+            //     //     #endif
+            //     //     isLedSwitchedOff = !isLedSwitchedOff;
+            //     //     digitalWrite(TEST_LED, LOW);
+            //     //     fill_solid(leds, LED_NUM, CRGB::Gray0);                                     // заливаем всю ленту чёрным (отключаем)
+            //     //     for (unsigned char i = 0; i < LED_CHIPS_ON_FLOOR; i++) {                    // заливаем 1-ю ступень белым
+            //     //         leds[i] = CRGB::Gray100;
+            //     //     }
+            //     //     for (unsigned char i = LED_NUM; i > (LED_NUM - LED_CHIPS_ON_FLOOR); i--) {  // заливаем последнюю ступень белым
+            //     //         leds[i] = CRGB::Gray100;
+            //     //     }
+            //     //     FastLED.show();
+            //     // }
+            // }
         }
         
     // Период времени работы чисто дежурки
@@ -224,4 +252,8 @@ void loop() {
 
 bool checkDistance(unsigned int sensor1, unsigned int sensor2, unsigned int distanceSetpoint) {
     return (sensor1 <= distanceSetpoint) || (sensor2 <= distanceSetpoint);
+}
+
+bool fallTrigger(unsigned int prevValue, unsigned int currValue) {
+    return currValue < prevValue;
 }
