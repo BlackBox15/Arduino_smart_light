@@ -30,7 +30,7 @@ Ds1302 rtc(PIN_RST, PIN_CLK, PIN_DAT);
 
 #define LED_PIN                         A1      // Пин управления лентой
 #define LED_NUM                         15     // количество чипов (для WS2811 каждый чип управляет 3мя диодами)
-#define LED_BRIGHTNESS_STBY             15      // яркость диодов во включенном дежурном режиме
+#define LED_BRIGHTNESS_STBY             40      // яркость диодов во включенном дежурном режиме
 #define LED_BRIGHTNESS_SENSOR           15      // яркость диодов во включенном состоянии по сенсору
 #define LED_CHIPS_ON_FLOOR              4      // число чипов на ступень
 
@@ -197,7 +197,7 @@ void loop() {
         currentState = F("Stby after midnight");
         if (now.hour >= timeParams[7] && now.hour < timeParams[9]) {
             digitalWrite(TEST_LED, HIGH);
-            fill_solid(leds, LED_NUM, CRGB::Gray10);
+            fill_solid(leds, LED_NUM, CRGB(LED_BRIGHTNESS_STBY, LED_BRIGHTNESS_STBY, LED_BRIGHTNESS_STBY));
             FastLED.show();
         } else {
             currentState = F("Stby after midnight, sensor");
@@ -207,7 +207,7 @@ void loop() {
         currentState = F("Stby before midnight");
         if (now.hour > timeParams[5] && now.hour <= 23) {
             digitalWrite(TEST_LED, HIGH);
-            fill_solid(leds, LED_NUM, CRGB::Gray10);
+            fill_solid(leds, LED_NUM, CRGB(LED_BRIGHTNESS_STBY, LED_BRIGHTNESS_STBY, LED_BRIGHTNESS_STBY));
             FastLED.show();
         } else {
             currentState = F("Stby before midnight, sensor");
