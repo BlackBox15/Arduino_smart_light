@@ -96,7 +96,7 @@ void setup() {
     }
 
     FastLED.addLeds<WS2811, LED_PIN, GRB>(leds, LED_NUM);
-    FastLED.setBrightness(LED_BRIGHTNESS_STBY);
+    // FastLED.setBrightness(LED_BRIGHTNESS_STBY);
 
 // FastLED.show();
 // printTimeSettings();
@@ -128,7 +128,7 @@ void setup() {
 void loop() {
     static lightStates prevLightState;
     static lightStates currentLightState;
-    static Ds1302::DateTime now;
+    static Ds1302::DateTime now = fillDateTime(timeParams);
     unsigned long currentMillis = millis();
     static unsigned long prevTimeCheck;
     static unsigned long prevDistanceCheck;
@@ -166,7 +166,7 @@ void loop() {
         printTimeFromRtc(now);
 
 #ifdef DEBUG
-        Serial.print(F("current state "));
+        Serial.print(F("current state: "));
         Serial.println(currentState);
         Serial.print(F("now.hour "));
         Serial.println(now.hour);
